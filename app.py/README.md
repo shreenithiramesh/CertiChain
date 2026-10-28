@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
 
-
+# ---------------- CONFIGURATION ----------------
 
 st.set_page_config(
     page_title="CertiChain",
@@ -31,7 +31,7 @@ PUBLIC_KEY_PATH = os.path.join(DATA_DIR, "public_key.pem")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
-
+# ---------------- DATABASE ----------------
 
 def get_connection():
     return sqlite3.connect(DB_PATH)
@@ -68,6 +68,8 @@ def initialize_database():
         """)
 
 
+# ---------------- DIGITAL SIGNATURE KEYS ----------------
+
 def load_or_create_keys():
     if not os.path.exists(PRIVATE_KEY_PATH):
         private_key = Ed25519PrivateKey.generate()
@@ -100,7 +102,7 @@ def load_or_create_keys():
     return private_key, public_key
 
 
-
+# ---------------- HASHING ----------------
 
 def sha256_bytes(data):
     return hashlib.sha256(data).hexdigest()
@@ -115,7 +117,7 @@ def canonical_json(data):
     ).encode("utf-8")
 
 
-
+# ---------------- AUDIT LOG ----------------
 
 def append_audit(action, cert_id, details):
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -181,6 +183,7 @@ def verify_audit_chain():
     return True
 
 
+# ---------------- MERKLE ROOT ----------------
 
 def calculate_merkle_root(hashes):
     if not hashes:
@@ -203,6 +206,7 @@ def calculate_merkle_root(hashes):
     return level[0]
 
 
+# ---------------- CERTIFICATE ISSUE ----------------
 
 def issue_certificate(
     cert_id, student_name, register_no, degree,
@@ -259,7 +263,7 @@ def issue_certificate(
     return signed_record
 
 
-
+# ---------------- CERTIFICATE VERIFY ----------------
 
 def verify_certificate(cert_id, uploaded_file_bytes):
     with get_connection() as conn:
@@ -308,13 +312,13 @@ def verify_certificate(cert_id, uploaded_file_bytes):
     return True, "Certificate verified successfully.", record
 
 
-
+# ---------------- INITIALIZE ----------------
 
 initialize_database()
 private_key, public_key = load_or_create_keys()
 
 
-
+# ---------------- USER INTERFACE ----------------
 
 st.title("🎓 CertiChain")
 st.caption(
@@ -334,7 +338,7 @@ page = st.sidebar.radio(
 )
 
 
-
+# ---------------- DASHBOARD ----------------
 
 if page == "Dashboard":
     with get_connection() as conn:
@@ -372,7 +376,7 @@ if page == "Dashboard":
     """)
 
 
-
+# ---------------- ISSUE CERTIFICATE ----------------
 
 elif page == "Issue Certificate":
     st.subheader("Issue a New Certificate")
@@ -443,7 +447,7 @@ elif page == "Issue Certificate":
                 st.error(str(error))
 
 
-
+# ---------------- VERIFY CERTIFICATE ----------------
 
 elif page == "Verify Certificate":
     st.subheader("Verify Academic Certificate")
@@ -480,6 +484,7 @@ elif page == "Verify Certificate":
                     st.write("Recorded status:", record["status"])
 
 
+# ---------------- REVOKE CERTIFICATE ----------------
 
 elif page == "Revoke Certificate":
     st.subheader("Revoke a Certificate")
@@ -518,7 +523,7 @@ elif page == "Revoke Certificate":
                     st.success("Certificate marked as REVOKED.")
 
 
-
+# ---------------- INTEGRITY & AUDIT ----------------
 
 elif page == "Integrity & Audit":
     st.subheader("System Integrity")
