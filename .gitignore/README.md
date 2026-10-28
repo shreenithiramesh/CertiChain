@@ -1,1 +1,8 @@
-
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+data/
+*.db
+*.pem
